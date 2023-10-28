@@ -1,0 +1,19 @@
+
+def main():
+    pathToDownloadFolder = "F:\\videos"
+
+    if not os.path.exists(join(pathToDownloadFolder, "videos")):
+        os.mkdir(os.path.join(pathToDownloadFolder, "videos"))
+
+    if not os.path.exists(join(pathToDownloadFolder, "images")):
+        os.mkdir(os.path.join(pathToDownloadFolder, "images"))
+
+
+    goproManager = GoProManager()
+    mediaMetaData = goproManager.getMediaList()
+
+    #for elem in mediaMetaData["_embedded"]["media"]:
+    elem = mediaMetaData["_embedded"]["media"][0]
+    id = elem["id"]
+    type = elem["type"]
+    goproManager.downloadMedia(id=id,type=type,path=pathToDownloadFolder)
