@@ -23,6 +23,8 @@ class GoProManager:
 		self.path = path
 		self.USER_EMAIL = email
 		self.USER_PASSWORD = password
+		self.pages = None
+		self.pageCounter = 1
 
 	def getToken(self):
 		data = {
@@ -45,24 +47,35 @@ class GoProManager:
 			'Content-Type': 'application/json',
 			'Authorization': 'Bearer ' + self.getToken()
 		}
-		url = self.GOPRO_API_GET_MEDIA + "?fields=captured_at,content_title,content_type,created_at,gopro_user_id,file_size,id,token,type,resolution,filename,file_extension"
-		request = urllib.request.Request(url, headers=headers)
-		resp = urllib.request.urlopen(request)
-		content = resp.read()
-		#remove b and ' at the beginning of the file to create json format
-		content = str(content)
-		content = content[1:]
-		content = content[1:]
-		content = content[:-1]
-		print(content)
-		json_content = json.loads(content)
 
 		mediaMetaDataList = []
-		for elem in json_content["_embedded"]["media"]:
-			mediaMetaDataList.append(
-				MediaElement(id=elem["id"], filename=elem["filename"], date=["captured_at"], fileSize=elem["file_size"],
-							 fileExtension=["file_extension"]))
 
+		thumbnailURL = "https://images-01.gopro.com/resize/450wwp/"
+		for index in range(self.pages):
+
+			url = self.GOPRO_API_GET_MEDIA + "?fields=captured_at,content_title,content_type,created_at,gopro_user_id,file_size,id,token,type,resolution,filename,file_extension&per_page=30&page=" + str(index) + "&type="
+			request = urllib.request.Request(url, headers=headers)
+			resp = urllib.request.urlopen(request)
+			content = resp.read()
+			#remove b and ' at the beginning of the file to create json format
+			content = str(content)
+			content = content[1:]
+			content = content[1:]
+			content = content[:-1]
+			#print(content)
+			json_content = json.loads(content)
+
+			for elem in json_content["_embedded"]["media"]:
+
+				thumbnailRequest = urllib.request.Request((thumbnailURL + str(elem["token"])), headers=headers)
+				thumbnailResponse = urllib.request.urlopen(thumbnailRequest)
+				print(thumbnailResponse)
+				mediaMetaDataList.append(
+					MediaElement(id=elem["id"], filename=elem["filename"], date=elem["captured_at"], fileSize=elem["file_size"],
+								 fileExtension=elem["file_extension"],
+								 thumbnail=thumbnailResponse))
+
+		print("Media: " + str(len(mediaMetaDataList)))
 		return mediaMetaDataList
 
 
@@ -118,6 +131,8 @@ class GoProManager:
 		}
 		response = requests.get(url, params=params, headers=headers)
 		response.raise_for_status()
+		self.pages = response.json()["_pages"]["total_pages"]
+		print("Pages: " + str(self.pages))
 		return response.status_code
 
 

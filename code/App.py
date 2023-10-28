@@ -20,9 +20,9 @@ class ScrollableLabelButtonFrame(customtkinter.CTkScrollableFrame):
         self.column = 0
         self.row = 0
 
-    def add_item(self, item, image=None):
+    def add_item(self, file):
 
-        self.loadButton = customtkinter.CTkButton(master=self, text="Load", fg_color="gray9",
+        self.loadButton = customtkinter.CTkButton(master=self, text=file, fg_color="gray9",
                                                   border_width=2, text_color=("gray10", "#DCE4EE"),
                                                   width=150, height=100)
 
@@ -38,9 +38,9 @@ class ScrollableLabelButtonFrame(customtkinter.CTkScrollableFrame):
 
 
 
-    def remove_item(self, item):
+    def remove_item(self, file):
         for label, button in zip(self.label_list, self.button_list):
-            if item == label.cget("text"):
+            if file == label.cget("text"):
                 label.destroy()
                 button.destroy()
                 self.label_list.remove(label)
@@ -87,14 +87,7 @@ class App(customtkinter.CTk):
                                                                         corner_radius=0,
                                                                         fg_color="gray5")
         self.scrollable_label_button_frame.grid(row=0, column=1, padx=0, pady=0, rowspan=4, sticky="nsew")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
-        self.scrollable_label_button_frame.add_item("new item")
+
 
 
     def loadMedia(self):
@@ -103,8 +96,9 @@ class App(customtkinter.CTk):
                                             path=self.directoryField.get())
             if self.goproManager.checkConnection() == 200:
                 mediaList = self.goproManager.getMediaList()
-
-                #for elem in mediaList:
+                print(len(mediaList))
+                for elem in mediaList:
+                    self.scrollable_label_button_frame.add_item(str(elem.filename) + "\n" + str(elem.date) + "\n" + str(elem.fileExtension))
 
 
 
