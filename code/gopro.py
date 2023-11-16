@@ -1,4 +1,5 @@
 import os
+import shutil
 import urllib.request
 import re
 import json
@@ -50,30 +51,45 @@ class GoProManager:
 
 		mediaMetaDataList = []
 
-		thumbnailURL = "https://images-01.gopro.com/resize/450wwp/"
-		for index in range(self.pages):
+		thumbnailURL = "https://images-02.gopro.com/resize/450wwp/"
+		for index in range(1,self.pages):
 
-			url = self.GOPRO_API_GET_MEDIA + "?fields=captured_at,content_title,content_type,created_at,gopro_user_id,file_size,id,token,type,resolution,filename,file_extension&per_page=30&page=" + str(index) + "&type="
+			url = self.GOPRO_API_GET_MEDIA + "?fields=captured_at,content_title,content_type,created_at,gopro_user_id,file_size,id,token,type,resolution,filename,file_extension&per_page=50&page=" + str(index)
 			request = urllib.request.Request(url, headers=headers)
 			resp = urllib.request.urlopen(request)
 			content = resp.read()
+
 			#remove b and ' at the beginning of the file to create json format
 			content = str(content)
 			content = content[1:]
 			content = content[1:]
 			content = content[:-1]
-			#print(content)
+			print(content)
 			json_content = json.loads(content)
-
+			x = 1
 			for elem in json_content["_embedded"]["media"]:
 
-				thumbnailRequest = urllib.request.Request((thumbnailURL + str(elem["token"])), headers=headers)
-				thumbnailResponse = urllib.request.urlopen(thumbnailRequest)
-				print(thumbnailResponse)
-				mediaMetaDataList.append(
-					MediaElement(id=elem["id"], filename=elem["filename"], date=elem["captured_at"], fileSize=elem["file_size"],
-								 fileExtension=elem["file_extension"],
-								 thumbnail=thumbnailResponse))
+				#thumbnailRequest = urllib.request.Request((thumbnailURL + str(elem["token"])), headers=headers)
+				#thumbnailResponse = urllib.request.urlopen(thumbnailRequest)
+				if not elem["id"] == "3ay9wVXzM79Ww":
+					print("elem: " + str(elem["id"]) + " - " + str(elem["filename"]))
+					print((thumbnailURL + str(elem["token"])))
+					thumbnail = requests.get((thumbnailURL + str(elem["token"])), stream=True).content
+					if elem["filename"] == '':
+						f = open(x, 'wb')
+					else:
+						f = open(elem["filename"], 'wb')
+
+					# Storing the image data inside the data variable to the file
+					f.write(thumbnail)
+					f.close()
+
+
+
+		#mediaMetaDataList.append(
+					#MediaElement(id=elem["id"], filename=elem["filename"], date=elem["captured_at"], fileSize=elem["file_size"],
+								# fileExtension=elem["file_extension"],
+								 #thumbnail=thumbnailResponse))
 
 		print("Media: " + str(len(mediaMetaDataList)))
 		return mediaMetaDataList

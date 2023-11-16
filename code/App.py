@@ -96,7 +96,6 @@ class App(customtkinter.CTk):
                                             path=self.directoryField.get())
             if self.goproManager.checkConnection() == 200:
                 mediaList = self.goproManager.getMediaList()
-                print(len(mediaList))
                 for elem in mediaList:
                     self.scrollable_label_button_frame.add_item(str(elem.filename) + "\n" + str(elem.date) + "\n" + str(elem.fileExtension))
 
